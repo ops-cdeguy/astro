@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout pageTitle="404">
+  <section class="lost">
+    <h1>404</h1>
+    <pre class="scan" id="scan" aria-hidden="true">[          #          ]</pre>
+    <p>no such page: <code id="path"></code></p>
+    <a href="/">go home</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .lost {
+    min-height: 60vh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+  h1 {
+    margin: 0;
+  }
+  p {
+    margin: 0;
+  }
+  .scan {
+    margin: 0;
+    font-family: ui-monospace, 'JetBrains Mono', monospace;
+    white-space: pre;
+  }
+</style>
+
+<script>
+  const WIDTH = 24;
+  const trail = ['#', '=', '-', '.'];
+  const scan = document.getElementById('scan');
+  const path = document.getElementById('path');
+
+  // show the address that wasn't found (textContent keeps it safe)
+  if (path) path.textContent = location.pathname;
+
+  // one frame: a bright head at `pos` with a fading glow around it
+  function frame(pos) {
+    let out = '';
+    for (let i = 0; i < WIDTH; i++) {
+      const d = Math.abs(i - pos);
+      out += d < trail.length ? trail[d] : ' ';
+    }
+    return `[${out}]`;
+  }
+
+  // head sweeps right, then back left
+  const positions = [];
+  for (let i = 0; i < WIDTH; i++) positions.push(i);
+  for (let i = WIDTH - 2; i > 0; i--) positions.push(i);
+
+  if (scan) {
+    scan.textContent = frame(Math.floor(WIDTH / 2));
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      let n = 0;
+      setInterval(() => {
+        scan.textContent = frame(positions[n++ % positions.length]);
+      }, 70);
+    }
+  }
+</script>
